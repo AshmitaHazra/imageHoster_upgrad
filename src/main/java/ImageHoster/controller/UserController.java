@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Controller
@@ -23,6 +25,8 @@ public class UserController {
 
     @Autowired
     private ImageService imageService;
+
+    String error = "Password must contain atleast 1 alphabet, 1 number & 1 special character";
 
     //This controller method is called when the request pattern is of type 'users/registration'
     //This method declares User type and UserProfile type object
@@ -37,12 +41,30 @@ public class UserController {
         return "users/registration";
     }
 
+    //Method to check the password validation
+    //the pattern must match and hav 1 letter a number and a special character
+    //this method is called for validation
+    public boolean isValid(String password){
+        Pattern pattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[@#$%^&+=]).{1,}$");
+        Matcher matcher = pattern.matcher(password);
+        return matcher.matches();
+    }
+
+
     //This controller method is called when the request pattern is of type 'users/registration' and also the incoming request is of POST type
     //This method calls the business logic and after the user record is persisted in the database, directs to login page
     @RequestMapping(value = "users/registration", method = RequestMethod.POST)
-    public String registerUser(User user) {
-        userService.registerUser(user);
-        return "redirect:/users/login";
+    public String registerUser(User user, Model model) {
+        if(isValid(user.getPassword())){
+            userService.registerUser(user);
+            return "redirect:/users/login";
+        }
+        else{
+            System.out.print("else---"+ error);
+            model.addAttribute("User", user);
+            model.addAttribute("passwordTypeError", error);
+            return "users/registration";
+        }
     }
 
     //This controller method is called when the request pattern is of type 'users/login'

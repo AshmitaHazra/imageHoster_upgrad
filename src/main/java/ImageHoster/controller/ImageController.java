@@ -100,7 +100,8 @@ public class ImageController {
         User user = (User) session.getAttribute("loggeduser");
 
         model.addAttribute("image", image);
-
+        //if the user of the session is not the same as the user how has posted the pic
+        //the user will not be allowed to edit the post
         if(user.getUsername().equalsIgnoreCase(image.getUser().getUsername())){
             String tags = convertTagsToString(image.getTags());
             model.addAttribute("tags", tags);
@@ -157,6 +158,9 @@ public class ImageController {
         Image image = imageService.getImage(imageId);
         User user = (User) session.getAttribute("loggeduser");
         model.addAttribute("image", image);
+        //if the user of the session is not the same as the user how has posted the pic
+        //the user will not be allowed to delete the post
+        //the error message will show up
         if(user.getUsername().equalsIgnoreCase(image.getUser().getUsername())) {
             imageService.deleteImage(imageId);
             return "redirect:/images";
