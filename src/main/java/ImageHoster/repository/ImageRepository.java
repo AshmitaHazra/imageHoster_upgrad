@@ -59,6 +59,7 @@ public class ImageRepository {
             return null;
         }
     }
+
     public Image getImageById(int id) {
         EntityManager em = emf.createEntityManager();
         try {

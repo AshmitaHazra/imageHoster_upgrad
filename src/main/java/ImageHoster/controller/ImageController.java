@@ -1,8 +1,7 @@
 package ImageHoster.controller;
 
-import ImageHoster.model.Image;
-import ImageHoster.model.Tag;
-import ImageHoster.model.User;
+import ImageHoster.model.*;
+import ImageHoster.service.CommentService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,9 @@ public class ImageController {
 
     @Autowired
     private TagService tagService;
+
+    @Autowired
+    private CommentService commentService;
 
     String error = "Only the owner of the image can edit the image";
 
@@ -53,6 +55,7 @@ public class ImageController {
         Image image = imageService.getImageById(id);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        model.addAttribute("comments",image.getComment());
         return "images/image";
     }
 
@@ -100,6 +103,7 @@ public class ImageController {
         User user = (User) session.getAttribute("loggeduser");
 
         model.addAttribute("image", image);
+        model.addAttribute("comments",image.getComment());
         //if the user of the session is not the same as the user how has posted the pic
         //the user will not be allowed to edit the post
         if(user.getUsername().equalsIgnoreCase(image.getUser().getUsername())){
@@ -158,6 +162,7 @@ public class ImageController {
         Image image = imageService.getImage(imageId);
         User user = (User) session.getAttribute("loggeduser");
         model.addAttribute("image", image);
+        model.addAttribute("comments",image.getComment());
         //if the user of the session is not the same as the user how has posted the pic
         //the user will not be allowed to delete the post
         //the error message will show up
@@ -171,8 +176,20 @@ public class ImageController {
             return "images/image";
         }
     }
-
-
+    @RequestMapping(value="/image/{imageId}/{imageTitle}/comments",method = RequestMethod.POST)
+    public String addComments(@PathVariable("imageId") int id,@PathVariable("imageTitle") String title,@RequestParam("comment") String comment,HttpSession session,Model model) {
+       Comment c=new Comment();
+       Image image = imageService.getImage(id);
+        User user = (User) session.getAttribute("loggeduser");
+       c.setText(comment);
+       c.setCommentUser(user);
+       c.setImageCommenter(image);
+       commentService.addComment(c);
+        model.addAttribute("image", image);
+        model.addAttribute("tags", image.getTags());
+        model.addAttribute("comments",image.getComment());
+        return "redirect:/images/" +image.getId()+"/" +image.getTitle();
+    }
     //This method converts the image to Base64 format
     private String convertUploadedFileToBase64(MultipartFile file) throws IOException {
         return Base64.getEncoder().encodeToString(file.getBytes());

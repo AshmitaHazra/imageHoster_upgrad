@@ -60,7 +60,6 @@ public class UserController {
             return "redirect:/users/login";
         }
         else{
-            System.out.print("else---"+ error);
             model.addAttribute("User", user);
             model.addAttribute("passwordTypeError", error);
             return "users/registration";
